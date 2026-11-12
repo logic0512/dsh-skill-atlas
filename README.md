@@ -14,12 +14,19 @@ This plugin scans all of those folders, turns every `SKILL.md` into a card in a 
 
 ![Skill Atlas sidebar](docs/screenshot.jpg)
 
-## What it does
+## Pick, don't manage
 
-- **Scans everywhere** — `~/.dsh/skills`, `~/.agents/skills`, `~/.codex/skills`, `~/.codex/plugins`, `~/.claude/skills`, skills bundled by installed plugins, and each workspace's `.dsh/skills` / `.agents/skills`. Measured on one machine: 456 skills across 13 roots.
-- **Makes sense of it** — 136 duplicate copies merged, 16 capability categories, and same-prefix families (20 `artifact-template-*`, 29 `seedance-*`) collapsed into one expandable card.
-- **Shows what it looks like** — a one-line summary, source, size and token cost; covers for skills that ship sample images (16:9 decks, video posters, 4:5 images), click to enlarge.
-- **Puts it to work** — “用这个技能” opens a new session with `/skill-name ` already in the composer.
+There are plenty of skill managers. This plugin deliberately **skips the marketplace, the pre-install audit and the recycle bin** — that is manager work.
+
+It answers one question, quickly: **standing in front of several hundred skills, which one do I want right now?**
+
+- **See what it looks like** — cards carry real sample images, taken from the skill's own `assets/` or `examples/` first, then from its source repository tree. Icons, QR codes and banners shared by several skills are filtered out; no image is better than a wrong one.
+- **Narrow it down** — 16 capability categories built on what a skill *produces*, not on words in its name; families like 20 `artifact-template-*` or 29 `seedance-*` collapse into one expandable card that pops open while you search; one-line summaries, search, category rail, usage-first ordering.
+- **Know the boundary** — every card states whether DSH can actually resolve it: resolvable, linked, or not linked. No guessing, no overselling.
+- **Get it connected** — for skills DSH cannot see, one click creates a symlink in `~/.dsh/skills`. No copy, source untouched, removable at any time.
+- **Start working** — pick one and a new session opens with `/skill-name ` already in the composer.
+
+Measured on one machine: 13 source roots, 456 skills, 136 duplicate copies merged, 16 categories.
 
 ## Card states
 

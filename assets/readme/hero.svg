@@ -19,7 +19,7 @@
     <text x="64" y="186" font-size="20" fill="#6E747E" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">dsh-skill-atlas</text>
 
     <text x="64" y="242" font-size="22" fill="#C3C9D1">把你电脑上所有 agent 的 skill，</text>
-    <text x="64" y="274" font-size="22" fill="#C3C9D1">收进 DSH 的一个侧栏。</text>
+    <text x="64" y="274" font-size="22" fill="#C3C9D1">收进侧栏，挑一个就用。</text>
 
     <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
       <text x="64" y="350" font-size="38" font-weight="600" fill="#F2F0EC">13</text>
