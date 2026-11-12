@@ -1,0 +1,54 @@
+{
+  "name": "dsh-skill-atlas",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Skill Atlas for DeepSeek Harness: a sidebar that lists every installed skill as a card, groups them by capability, and starts a new session with the skill prefilled.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "docs/*.md",
+    "tools/*.mjs",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "skills",
+    "skill-management",
+    "agent-skills"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logic0512/dsh-skill-atlas.git"
+  },
+  "homepage": "https://github.com/logic0512/dsh-skill-atlas",
+  "bugs": {
+    "url": "https://github.com/logic0512/dsh-skill-atlas/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,4 @@
+# dsh-skill-atlas: mounts the host half and the 技能大全 sidebar page.
+- insert:
+    - id: skill-atlas
+      name: dsh-skill-atlas
