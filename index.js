@@ -345,6 +345,10 @@ export async function scan() {
     for (const skill of group) skill.git = info
   }))
 
+  // DSH 自己解析 /技能名 时只认这几个根（见 dsh-skill-filesystem 的 roots()）。
+  // 不在这些根里的技能，扫得到、看得到，但调不出来——需要往 ~/.dsh/skills 建一个软链。
+  const DSH_ROOT = /^(dsh-user|agents|plugin:|ws:|ws-agents:)/
+  const userSkillsDir = join(DSH_HOME, 'skills')
   const catalog = loadCatalog()
   const overrides = readOverrides()
   let curated = 0
@@ -369,6 +373,9 @@ export async function scan() {
       skill.curated = false
     }
     skill.git = skill.git || null
+    skill.dshReachable = skill.sources.some(x => DSH_ROOT.test(x.id))
+    skill.linkedByAtlas = Boolean(skill.linkPath && dirname(skill.linkPath) === userSkillsDir)
+    skill.linkTarget = join(userSkillsDir, skill.dirName)
   }
 
   skills.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans-CN'))
@@ -626,6 +633,37 @@ async function route(req, res) {
     if (out === null) { json(res, 500, { error: 'git pull 失败，可能是分支分叉或网络问题' }); return }
     await listCached(true)
     json(res, 200, { ok: true, root, output: out.split('\n').slice(-6).join('\n') })
+    return
+  }
+
+  // 接入 DSH：在 ~/.dsh/skills 下建软链。不复制内容，源目录更新即生效。
+  if (method === 'POST' && path === '/link') {
+    if (!skill) { json(res, 404, { error: '没有这个技能' }); return }
+    if (skill.dshReachable) { json(res, 200, { ok: true, message: '它已经在 DSH 的技能根里，无需接入' }); return }
+    const target = skill.linkTarget
+    if (existsSync(target)) {
+      const real = safeRealpath(target)
+      if (real === skill.path) { json(res, 200, { ok: true, message: '已经接入过了' }); return }
+      json(res, 400, { error: `~/.dsh/skills 下已有同名条目：${skill.dirName}` }); return
+    }
+    mkdirSync(dirname(target), { recursive: true })
+    symlinkSync(skill.path, target, 'dir')
+    await listCached(true)
+    json(res, 200, { ok: true, message: `已接入：~/.dsh/skills/${skill.dirName}` })
+    return
+  }
+
+  if (method === 'POST' && path === '/unlink') {
+    if (!skill) { json(res, 404, { error: '没有这个技能' }); return }
+    const target = skill.linkTarget
+    if (!existsSync(target)) { json(res, 400, { error: '没有接入记录' }); return }
+    let st
+    try { st = lstatSync(target) } catch { json(res, 400, { error: '无法读取链接' }); return }
+    if (!st.isSymbolicLink()) { json(res, 400, { error: '这不是软链，不动它' }); return }
+    if (safeRealpath(target) !== skill.path) { json(res, 400, { error: '这个链接指向别的技能，不动它' }); return }
+    rmSync(target, { force: true })
+    await listCached(true)
+    json(res, 200, { ok: true, message: '已断开接入' })
     return
   }
 

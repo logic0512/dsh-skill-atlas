@@ -1,88 +1,106 @@
 # dsh-skill-atlas
 
-A sidebar panel for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) that turns your installed skills into cards you can actually browse, and starts a new session with the chosen skill prefilled.
+**Your skills live in more than one place.**
 
-Installed a few hundred skills and now you cannot remember which one to use? That is the problem this plugin answers.
+Claude Code, Codex, Cursor, WorkBuddy — every agent keeps its own skills directory. A few hundred `SKILL.md` files end up scattered across a dozen folders, and once installed they are forgotten.
 
-> **It ships no skill data.** Everything you see comes from your own machine. The plugin only reads `SKILL.md` files, classifies them, and renders them.
+This plugin pulls all of them into one sidebar in DeepSeek Harness: **scan → deduplicate and classify → preview → use.**
 
 ![Skill Atlas sidebar](docs/screenshot.jpg)
 
-![Detail view with samples](docs/screenshot-detail.jpg)
+[简体中文](README.zh-CN.md)
 
 ## What it does
 
 | | |
 |---|---|
-| **One place for every skill** | Scans `~/.dsh/skills`, `~/.agents/skills`, `~/.codex/skills`, `~/.codex/plugins`, `~/.claude/skills`, skills shipped inside installed plugins, and each workspace's `.dsh/skills` |
-| **Cards, not a file tree** | Name, one-line summary, category, sample count, git revision, disabled state |
-| **16 capability categories** | Deck / video / audio / image / design / docs / writing / data / game / code / agent / ops / platform / career / thinking / other |
-| **Family collapse** | 20 `artifact-template-*` or 29 `seedance-*` cards would flood the page; families of 6+ collapse into one card that expands on click, and auto-expands while you search |
-| **Samples on the card** | If a skill ships example images, the card shows a cover; deck cards use a 16:9 frame, video a poster with a play state, image a 4:5 frame. Click any card to open a full-size preview with thumbnails |
-| **Use it, don't install it** | “用这个技能” calls the host's `uiWorkspace.startSession` and opens a **new session** with `/skill-name ` prefilled. “插入到当前对话” only touches the composer you are already looking at |
-| **Masonry layout** | Mixed 16:9 and 4:5 cards flow without overlap |
-| **Search, filter, sort** | Full-text search over name and summary, category rail, “only skills with samples”, and usage-first ordering (click counts stay in `localStorage`) |
+| **Scan everything** | `~/.dsh/skills`, `~/.agents/skills`, `~/.codex/skills`, `~/.codex/plugins` (including cached and nested skills), `~/.claude/skills`, skills bundled by installed plugins, plus each workspace's `.dsh/skills` and `.agents/skills`. On one real machine: **456 skills across 13 roots** |
+| **Deduplicate and classify** | 136 duplicate copies merged into single cards, 16 capability categories, and same-prefix families (20 `artifact-template-*`, 29 `seedance-*`) collapsed into one expandable card that auto-expands while you search |
+| **Preview** | A one-line summary, source, size and token cost per skill; covers for skills that ship sample images (16:9 for decks, posters for video, 4:5 for images), click to enlarge and step through samples |
+| **Use** | "用这个技能" starts a **new session** with `/skill-name ` prefilled in the composer |
+
+## One thing you should know
+
+DSH resolves `/skill-name` only inside these roots (source: `roots()` in `dsh-skill-filesystem`):
+
+```
+<workspace>/.dsh/skills      <workspace>/.agents/skills
+~/.dsh/skills                ~/.agents/skills
+plugin-bundled skills        custom directories
+```
+
+**`~/.codex/skills` and `~/.claude/skills` are not among them.** Scanning a skill does not make it callable.
+
+On that same 456-skill machine:
+
+```
+directly callable   221
+needs linking       235   (all under ~/.codex)
+```
+
+So every card carries one of three states:
+
+| State | Meaning | What you can do |
+|---|---|---|
+| **可直接调用** | Already inside a DSH root | Start a session with it |
+| **已接入** | The plugin symlinked it into `~/.dsh/skills` | Same, and you can unlink it again |
+| **未接入** | Only present in another agent's folder | "接入 DSH" creates a symlink |
+
+**Linking creates a symlink, never a copy.** No duplicated bytes, the source directory is untouched, edits show up immediately, and removing the link undoes it. It is exactly what you would do by hand in `~/.dsh/skills`, minus the manual work.
 
 ## Install
-
-From GitHub (no build step, plain JavaScript):
 
 ```sh
 dsh plugin --profile web add github:logic0512/dsh-skill-atlas
 ```
 
-Replace `web` with your profile name. On the desktop app, open **Plugins → Add plugin** and paste:
+Replace `web` with your profile name. In the desktop app: **Plugins → Add plugin**, paste `github:logic0512/dsh-skill-atlas`.
 
-```
-github:logic0512/dsh-skill-atlas
-```
-
-Then restart the Harness process and refresh the page. A **技能大全 / Skill Atlas** entry appears in the sidebar panel list.
-
-## How it reads your skills
-
-For every directory containing a `SKILL.md`, the plugin parses the YAML frontmatter (`name`, `description`, `disable-model-invocation`) and computes size, token estimates and git revision. Same-name copies across roots are merged into one card, with the extra locations listed in the detail view.
-
-Without a catalog file it classifies by keywords on the name first, then the description (name hit = strong signal, first 120 characters = medium, rest = weak). That is decent but not perfect — which is what the optional catalog is for.
+Restart the Harness process afterwards; the **Skill Atlas** entry appears in the sidebar.
 
 ## Optional: your own catalog
 
-If you want Chinese summaries, corrected categories, or attached sample images, put a catalog at:
+The plugin ships no skill data. Out of the box it classifies by keywords, but summaries, corrected categories and sample images are yours to define. Drop a catalog at `$DSH_HOME/skill-atlas/catalog.json`:
 
+```json
+[{
+  "name": "guizang-ppt-skill",
+  "category": "deck",
+  "zh": "做横向翻页网页 PPT：电子杂志或瑞士风，带讲者视图与讲稿",
+  "repo": "https://github.com/op7418/guizang-ppt-skill",
+  "samples": ["/Users/me/.dsh/skill-atlas/samples/guizang-ppt-skill/0.png"]
+}]
 ```
-$DSH_HOME/skill-atlas/catalog.json
-```
 
-The plugin merges it over the scan: entries found there win, everything else falls back to keywords. See [docs/CATALOG.md](docs/CATALOG.md) for the format and a suggested workflow for building one.
-
-Sample images are served from disk through the host, never copied into the plugin.
+Format and workflow: [docs/CATALOG.md](docs/CATALOG.md), including the three traps worth knowing — a skill named `video-downloader` is not a video producer, app icons and QR codes masquerade as sample images, and two skills can end up sharing one cover.
 
 ## Safety
 
-- Scanning is read-only. The plugin never edits a skill directory on its own.
-- The only writes are explicit actions in the detail view: **停用/启用** (rewrites `disable-model-invocation` in `SKILL.md`, leaving a `SKILL.md.atlas-bak` backup first) and **检查更新 / 更新** (`git fetch` then `git pull --ff-only`, refused when the repo has uncommitted changes).
-- Every HTTP route validates the request against the scan result and returns 404 for an unknown id; no arbitrary path is ever served.
-- Sample images are size-capped and must be `png`/`jpg`/`webp`/`gif`.
+- Scanning is read-only. Skill directories are never modified by the scan.
+- The only writes are explicit actions you trigger:
+  - **Link / unlink** — create or remove one symlink in `~/.dsh/skills` (the target is verified to point at that exact skill before removal)
+  - **Disable / enable** — rewrite `disable-model-invocation` in `SKILL.md`, after saving `SKILL.md.atlas-bak`
+  - **Check for updates / update** — `git fetch`, then `git pull --ff-only`, refused when the repo has uncommitted changes
+- Every route validates the id against the scan result and returns 404 otherwise; no arbitrary path is ever served.
+- Sample images are size-capped and restricted to png/jpg/webp/gif.
 
 ## Development
 
-No build step. The client is plain `React.createElement`, loaded by the host through `__ModuleLoader__`.
+No build step. The client is plain `React.createElement`, loaded through the host's `__ModuleLoader__`.
 
 ```sh
 node --check index.js && node --check client.js
 node test/host-smoke.mjs      # runs against a throwaway DSH_HOME
 ```
 
-`test/host-smoke.mjs` covers the whole host flow: scan, read, toggle on/off, install to a workspace, uninstall, and rejection of unknown ids.
-
-Layout:
+The smoke test covers scanning, reading `SKILL.md`, enable/disable, link/unlink, workspace install, and rejection of unknown ids.
 
 ```
-index.js            host: scanning, classification, git, /skill-atlas/* routes
-client.js           web: sidebar entry, card grid, modal
-cordis.patch.yml    bundle mount point
+index.js                 host: scanning, classification, git, /skill-atlas/* routes
+client.js                web: sidebar entry, card grid, modal
+cordis.patch.yml         bundle mount point
 tools/dump-catalog.mjs   dump the current scan as a catalog skeleton
-docs/CATALOG.md     catalog format and how to build one
+docs/CATALOG.md          catalog format and how to build one
 ```
 
 ## License

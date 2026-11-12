@@ -128,6 +128,8 @@ window.__ModuleLoader__.load({
 .atlas-chip { font-size:10px; padding:1px 6px; border-radius:20px; background:#24272c; color:#9aa1ab; border:1px solid #2e3238; white-space:nowrap; }
 .atlas-chip.hot { background:#2a2416; color:#e0b64a; border-color:#453a1c; }
 .atlas-chip.off { background:#2b1d1d; color:#e08a8a; border-color:#48302f; }
+.atlas-chip.green { background:#16281f; color:#6fce9a; border-color:#25402f; }
+.atlas-chip.amber { background:#2a2416; color:#e0b64a; border-color:#453a1c; }
 .atlas-chip.git { background:#1b2a22; color:#7fc9a0; border-color:#274034; }
 .atlas-drawer { width:392px; flex:none; border-left:1px solid var(--atlas-line,#292b2f); display:flex; flex-direction:column; min-height:0; background:#17191c; }
 .atlas-drawer-head { padding:12px 14px; border-bottom:1px solid var(--atlas-line,#292b2f); flex:none; }
@@ -212,6 +214,9 @@ window.__ModuleLoader__.load({
         has ? h('span', { key: 's', className: 'atlas-chip hot' }, `${s.samples.length} 张样例`) : null,
         git ? h('span', { key: 'g', className: 'atlas-chip git' }, `${git.hash}${git.dirty ? '*' : ''}`) : null,
         s.disabled ? h('span', { key: 'd', className: 'atlas-chip off' }, '已停用') : null,
+        s.dshReachable
+          ? h('span', { key: 'r', className: 'atlas-chip green' }, s.linkedByAtlas ? '已接入' : '可直接调用')
+          : h('span', { key: 'r', className: 'atlas-chip amber' }, '未接入'),
         s.workspaceId ? h('span', { key: 'w', className: 'atlas-chip hot' }, '工作区') : null,
       ].filter(Boolean)
 
@@ -298,6 +303,15 @@ window.__ModuleLoader__.load({
         else if (how === 'insert') setNote({ kind: 'ok', text: `已插入到当前对话：/${skillName}` })
         else setNote({ kind: 'err', text: '宿主没有提供开新会话的能力，已复制到剪贴板，粘到对话框即可' })
       }
+      const doLink = () => run('link', async () => {
+        const r = await api('/link', { id: skill.id })
+        return r.ok ? { ok: true, message: r.message || '已接入 DSH' } : r
+      })
+      const doUnlink = () => run('unlink', async () => {
+        const r = await api('/unlink', { id: skill.id })
+        return r.ok ? { ok: true, message: r.message || '已断开接入' } : r
+      })
+
       const doInsert = () => {
         if (insertSkill(skillName)) {
           bumpUsage(skill.name)
@@ -348,16 +362,26 @@ window.__ModuleLoader__.load({
 
             note ? h('div', { className: `atlas-note ${note.kind}`, style: { whiteSpace: 'pre-wrap' } }, note.text) : null,
 
-            h('div', { className: 'atlas-row' },
-              h('button', { className: 'atlas-btn primary', onClick: doUse }, '用这个技能'),
-              h('button', { className: 'atlas-btn', onClick: doInsert }, '插入到当前对话'),
-              h('span', { className: 'atlas-muted' }, `/${skill.dirName || skill.name}`)),
-            h('div', { className: 'atlas-muted', style: { marginTop: -4 } },
-              '「用这个技能」= 开新会话并预填「插入到当前对话」= 只动当前输入框'),
+            skill.dshReachable
+              ? h('div', { className: 'atlas-row' },
+                  h('button', { className: 'atlas-btn primary', onClick: doUse }, '用这个技能'),
+                  h('button', { className: 'atlas-btn', onClick: doInsert }, '插入到当前对话'),
+                  h('span', { className: 'atlas-muted' }, `/${skill.dirName || skill.name}`))
+              : h('div', { className: 'atlas-row' },
+                  h('button', { className: 'atlas-btn primary', disabled: !!busy, onClick: doLink },
+                    busy === 'link' ? '接入中…' : '接入 DSH'),
+                  h('span', { className: 'atlas-muted' }, '在这个技能目录建一个软链到 ~/.dsh/skills')),
+
+            skill.dshReachable
+              ? h('div', { className: 'atlas-muted', style: { marginTop: -4 } },
+                  '「用这个技能」= 开新会话并预填「插入到当前对话」= 只动当前输入框')
+              : h('div', { className: 'atlas-muted', style: { marginTop: -4 } },
+                  '它不在 DSH 的技能根里，所以现在调不到。接入只建一个软链，不复制内容、不改源目录。'),
 
             h('div', { className: 'atlas-actions' },
               h('button', { className: 'atlas-btn', disabled: !!busy, onClick: () => api('/reveal', { id: skill.id }) }, '在访达中显示'),
               h('button', { className: 'atlas-btn', disabled: !!busy, onClick: toggle }, skill.disabled ? '启用' : '停用'),
+              skill.linkedByAtlas ? h('button', { className: 'atlas-btn', disabled: !!busy, onClick: doUnlink }, '断开接入') : null,
               git ? h('button', { className: 'atlas-btn', disabled: !!busy, onClick: check }, busy === 'check' ? '检查中…' : '检查更新') : null,
               git && behind && behind.behind > 0 ? h('button', { className: 'atlas-btn primary', disabled: !!busy, onClick: pull }, busy === 'pull' ? '更新中…' : `更新（${behind.behind}）`) : null),
 

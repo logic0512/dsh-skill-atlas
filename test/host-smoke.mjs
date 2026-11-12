@@ -1,6 +1,6 @@
 // host 半片的自测：在临时 DSH_HOME 里跑完整链路，不碰真实 ~/.dsh。
 // 用法：node test/host-smoke.mjs
-import { mkdirSync, writeFileSync, existsSync, readFileSync, rmSync, lstatSync } from 'node:fs'
+import { cpSync, mkdirSync, writeFileSync, existsSync, readFileSync, rmSync, lstatSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -101,6 +101,24 @@ const bad = await get('/file?id=/etc/passwd')
 check('未知 id 被拒绝', bad.ok === false, bad)
 
 check('未知路由 404', (await get('/nope')).ok === false)
+
+// ---- 接入 DSH：不在 DSH 根里的技能（如 ~/.codex/skills 里的），建软链后才可调用 ----
+// 只读真实目录；所有写入都落在临时 DSH_HOME 里。
+const list4 = await get('/list')
+const foreign = list4.skills.find(s => !s.dshReachable)
+check('存在不在 DSH 根里的技能', Boolean(foreign), list4.skills.length)
+if (foreign) {
+  const linked = await post('/link', { id: foreign.id })
+  check('接入成功', linked.ok === true, linked)
+  check('软链已建', existsSync(join(DSH, 'skills', foreign.dirName)))
+  const list5 = await get('/list')
+  const after = list5.skills.find(s => s.id === foreign.id)
+  check('接入后变为可调用', after && after.dshReachable === true, after && after.dshReachable)
+  check('标为我自己接的', after && after.linkedByAtlas === true)
+  const un = await post('/unlink', { id: foreign.id })
+  check('断开接入成功', un.ok === true, un)
+  check('软链已删', !existsSync(join(DSH, 'skills', foreign.dirName)))
+}
 
 server.close()
 rmSync(ROOT, { recursive: true, force: true })
