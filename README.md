@@ -42,11 +42,27 @@ So every card carries one of three states:
 
 | State | Meaning | What you can do |
 |---|---|---|
-| **可直接调用** | Already inside a DSH root | Start a session with it |
+| **DSH 可解析** | Already inside a DSH root | Start a session with it |
 | **已接入** | The plugin symlinked it into `~/.dsh/skills` | Same, and you can unlink it again |
 | **未接入** | Only present in another agent's folder | "接入 DSH" creates a symlink |
 
+These three states only say whether **DSH can resolve** the skill. They say nothing about whether it will run — see below.
+
 **Linking creates a symlink, never a copy.** No duplicated bytes, the source directory is untouched, edits show up immediately, and removing the link undoes it. It is exactly what you would do by hand in `~/.dsh/skills`, minus the manual work.
+
+## What this plugin does and does not promise
+
+**It guarantees** scanning, deduplication, classification, path recording and reading `SKILL.md`. That part is deterministic and independent of your setup.
+
+**It does not guarantee** that a skill works once invoked. Three things decide that:
+
+1. **Is the skill inside a DSH root** — the one part this plugin can help with (linking)
+2. **Does the skill have external prerequisites** — API keys, CLI tools, Python/Node packages, third-party accounts or a logged-in session. These are described inside `SKILL.md`; the plugin neither reads nor configures them
+3. **Did you set them up** — that only happens on your side
+
+Real examples: the `seedance-20` family needs a Seedance API key, `playwright-scraper-skill` needs Chromium, `xiaohongshu-ops` needs a logged-in browser profile. Whether a skill exists and resolves is a different question from whether its dependencies are ready.
+
+So this plugin answers one question: **which skills are on this machine, where they live, and roughly what they do.** Whether a linked skill then succeeds depends on its prerequisites, not on the atlas.
 
 ## Install
 

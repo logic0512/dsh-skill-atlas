@@ -1,6 +1,6 @@
 {
   "name": "dsh-skill-atlas",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": false,
   "description": "Skill Atlas for DeepSeek Harness: a sidebar that lists every installed skill as a card, groups them by capability, and starts a new session with the skill prefilled.",
   "type": "module",

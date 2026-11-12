@@ -215,7 +215,7 @@ window.__ModuleLoader__.load({
         git ? h('span', { key: 'g', className: 'atlas-chip git' }, `${git.hash}${git.dirty ? '*' : ''}`) : null,
         s.disabled ? h('span', { key: 'd', className: 'atlas-chip off' }, '已停用') : null,
         s.dshReachable
-          ? h('span', { key: 'r', className: 'atlas-chip green' }, s.linkedByAtlas ? '已接入' : '可直接调用')
+          ? h('span', { key: 'r', className: 'atlas-chip green' }, s.linkedByAtlas ? '已接入' : 'DSH 可解析')
           : h('span', { key: 'r', className: 'atlas-chip amber' }, '未接入'),
         s.workspaceId ? h('span', { key: 'w', className: 'atlas-chip hot' }, '工作区') : null,
       ].filter(Boolean)
@@ -374,7 +374,7 @@ window.__ModuleLoader__.load({
 
             skill.dshReachable
               ? h('div', { className: 'atlas-muted', style: { marginTop: -4 } },
-                  '「用这个技能」= 开新会话并预填「插入到当前对话」= 只动当前输入框')
+                  '「用这个技能」= 开新会话并预填；「插入到当前对话」= 只动当前输入框。注意：DSH 能解析不等于它跑得起来——技能要的 API key、命令行工具、第三方账号要你自己配。')
               : h('div', { className: 'atlas-muted', style: { marginTop: -4 } },
                   '它不在 DSH 的技能根里，所以现在调不到。接入只建一个软链，不复制内容、不改源目录。'),
 
