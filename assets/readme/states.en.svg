@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 168" width="100%" role="img" aria-labelledby="stTitle stDesc">
+  <title id="stTitle">Three states on every card</title>
+  <desc id="stDesc">The three card states, and the caveat that linking only creates a symlink and being resolvable is not the same as runnable.</desc>
+
+  <rect width="1200" height="168" rx="16" fill="#0F1113"/>
+  <rect width="1200" height="168" rx="16" fill="none" stroke="#23262B"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif">
+    <text x="48" y="46" font-size="17" letter-spacing="1.6" fill="#7C838D">THREE STATES ON EVERY CARD</text>
+
+    <g>
+      <rect x="48" y="66" width="98" height="26" rx="13" fill="#16281F" stroke="#25402F"/>
+      <text x="97" y="84" font-size="15" fill="#6FCE9A" text-anchor="middle">resolvable</text>
+      <text x="48" y="118" font-size="16" fill="#9AA1AA">already inside a DSH skill root</text>
+    </g>
+
+    <g>
+      <rect x="330" y="66" width="82" height="26" rx="13" fill="#16281F" stroke="#25402F"/>
+      <text x="371" y="84" font-size="15" fill="#6FCE9A" text-anchor="middle">linked</text>
+      <text x="330" y="118" font-size="16" fill="#9AA1AA">symlinked by this plugin</text>
+    </g>
+
+    <g>
+      <rect x="612" y="66" width="82" height="26" rx="13" fill="#2A2416" stroke="#453A1C"/>
+      <text x="653" y="84" font-size="15" fill="#E0B64A" text-anchor="middle">not linked</text>
+      <text x="612" y="118" font-size="16" fill="#9AA1AA">only in another agent folder</text>
+    </g>
+
+    <line x1="48" y1="134" x2="1152" y2="134" stroke="#232730"/>
+    <text x="48" y="156" font-size="15" fill="#7C838D">Linking only creates a symlink: no copy, source untouched. Resolvable does not mean runnable — API keys, CLIs and sessions are yours to set up.</text>
+  </g>
+</svg>

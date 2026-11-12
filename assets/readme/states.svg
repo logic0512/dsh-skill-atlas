@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 168" width="100%" role="img" aria-labelledby="stTitle stDesc">
+  <title id="stTitle">技能的三种状态</title>
+  <desc id="stDesc">可解析、已接入、未接入三种状态，以及「接入只建软链，DSH 能解析不等于能跑起来」的说明。</desc>
+
+  <rect width="1200" height="168" rx="16" fill="#0F1113"/>
+  <rect width="1200" height="168" rx="16" fill="none" stroke="#23262B"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif">
+    <text x="48" y="46" font-size="17" letter-spacing="1.6" fill="#7C838D">卡片上的三种状态</text>
+
+    <g>
+      <rect x="48" y="66" width="98" height="26" rx="13" fill="#16281F" stroke="#25402F"/>
+      <text x="97" y="84" font-size="15" fill="#6FCE9A" text-anchor="middle">DSH 可解析</text>
+      <text x="48" y="118" font-size="16" fill="#9AA1AA">已经在 DSH 的技能根里</text>
+    </g>
+
+    <g>
+      <rect x="330" y="66" width="82" height="26" rx="13" fill="#16281F" stroke="#25402F"/>
+      <text x="371" y="84" font-size="15" fill="#6FCE9A" text-anchor="middle">已接入</text>
+      <text x="330" y="118" font-size="16" fill="#9AA1AA">由本插件建了软链</text>
+    </g>
+
+    <g>
+      <rect x="612" y="66" width="82" height="26" rx="13" fill="#2A2416" stroke="#453A1C"/>
+      <text x="653" y="84" font-size="15" fill="#E0B64A" text-anchor="middle">未接入</text>
+      <text x="612" y="118" font-size="16" fill="#9AA1AA">只在别的 agent 目录里</text>
+    </g>
+
+    <line x1="48" y1="134" x2="1152" y2="134" stroke="#232730"/>
+    <text x="48" y="156" font-size="15" fill="#7C838D">接入只建软链，不复制、不改源目录。DSH 能解析 ≠ 技能能跑：它要的 API key、CLI、登录态得你自己配。</text>
+  </g>
+</svg>
